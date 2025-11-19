@@ -37,6 +37,40 @@ router.post('/', auth, async (req, res) => {
   }
 });
 
+// update itinerary
+router.put('/:id', auth, async (req, res) => {
+  try {
+    const itinerary = await Itinerary.findById(req.params.id);
+    if (!itinerary) return res.status(404).json({ msg: 'Itinerary not found' });
+    if (itinerary.user.toString() !== req.user.id)
+      return res.status(403).json({ msg: 'Not authorized' });
+
+    const {
+      title, destinations, startDate, endDate,
+      activities, budget, notes, dailyBreakdown, isPublic
+    } = req.body;
+
+    if (title) itinerary.title = title;
+    if (destinations) itinerary.destinations = Array.isArray(destinations)
+      ? destinations.filter(d => d.trim()) : [destinations];
+    if (startDate) itinerary.startDate = startDate;
+    if (endDate) itinerary.endDate = endDate;
+    if (activities !== undefined) itinerary.activities = Array.isArray(activities)
+      ? activities : (activities ? activities.split(',').map(a => a.trim()) : []);
+    if (budget !== undefined) itinerary.budget = Number(budget);
+    if (notes !== undefined) itinerary.notes = notes;
+    if (dailyBreakdown !== undefined) itinerary.dailyBreakdown =
+      Array.isArray(dailyBreakdown) ? dailyBreakdown : [];
+    if (isPublic !== undefined) itinerary.isPublic = !!isPublic;
+
+    await itinerary.save();
+    res.json(itinerary);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: 'Server error' });
+  }
+});
+
 // get my itineraries
 router.get('/my', auth, async (req, res) => {
   try {

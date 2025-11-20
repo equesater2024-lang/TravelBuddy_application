@@ -4,6 +4,8 @@ import Itinerary from '../models/ContentsCreated/Itinerary.js';
 
 const router = express.Router();
 
+const VALID_STATUSES = ['Draft', 'Published', 'Completed'];
+
 // create itinerary
 router.post('/', auth, async (req, res) => {
   try {
@@ -28,6 +30,11 @@ router.post('/', auth, async (req, res) => {
       dailyBreakdown: Array.isArray(dailyBreakdown) ? dailyBreakdown : [],
       isPublic: !!isPublic,
     });
+
+    if (req.body.status && !VALID_STATUSES.includes(req.body.status))
+    return res.status(400).json({ msg: 'Invalid status value' });
+    if (!title) return res.status(400).json({ msg: 'Title is required' });
+    if (!startDate || !endDate) return res.status(400).json({ msg: 'Start and end dates are required' });
 
     await newItinerary.save();
     res.status(201).json(newItinerary);

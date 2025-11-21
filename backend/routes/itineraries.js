@@ -1,6 +1,7 @@
 import express from 'express';
 import auth from '../middleware/auth.js';
 import Itinerary from '../models/ContentsCreated/Itinerary.js';
+import SavedItinerary from '../models/ActivityLog/SavedItinerary.js';
 
 const router = express.Router();
 
@@ -111,6 +112,35 @@ router.get('/my', auth, async (req, res) => {
   try {
     const itineraries = await Itinerary.find({ user: req.user.id }).sort({ createdAt: -1 });
     res.json(itineraries);
+  } catch (err) {
+    res.status(500).json({ msg: 'Server error' });
+  }
+});
+
+// toggle save
+router.post('/:id/save', auth, async (req, res) => {
+  try {
+    const existing = await SavedItinerary.findOne({
+      user: req.user.id, itinerary: req.params.id
+    });
+    if (existing) {
+      await existing.deleteOne();
+      return res.json({ saved: false });
+    }
+    await SavedItinerary.create({ user: req.user.id, itinerary: req.params.id });
+    res.json({ saved: true });
+  } catch (err) {
+    res.status(500).json({ msg: 'Server error' });
+  }
+});
+
+// get save status
+router.get('/:id/save', auth, async (req, res) => {
+  try {
+    const saved = !!(await SavedItinerary.findOne({
+      user: req.user.id, itinerary: req.params.id
+    }));
+    res.json({ saved });
   } catch (err) {
     res.status(500).json({ msg: 'Server error' });
   }

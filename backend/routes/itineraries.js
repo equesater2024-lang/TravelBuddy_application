@@ -44,6 +44,19 @@ router.post('/', auth, async (req, res) => {
   }
 });
 
+// get public itineraries
+router.get('/public', async (req, res) => {
+  try {
+    const itineraries = await Itinerary.find({ isPublic: true })
+      .populate('user', 'username nickname profileIconUrl')
+      .sort({ createdAt: -1 });
+    res.json(itineraries);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: 'Server error' });
+  }
+});
+
 // update itinerary
 router.put('/:id', auth, async (req, res) => {
   try {

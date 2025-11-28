@@ -14,6 +14,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// serve uploaded images statically
+app.use('/uploads', express.static('uploads'));
+
 app.get('/', (req, res) => res.send('TravelBuddy API running'));
 app.use('/api/auth', authRoutes);
 app.use('/api/itineraries', itineraryRoutes);

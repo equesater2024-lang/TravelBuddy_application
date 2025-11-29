@@ -72,4 +72,17 @@ router.get('/', async (req, res) => {
   }
 });
 
+// GET /api/posts/my - only current users posts
+router.get('/my', auth, async (req, res) => {
+  try {
+    const posts = await Post.find({ user: req.user.id })
+      .populate('user', 'username nickname profileIconUrl')
+      .sort({ createdAt: -1 });
+    res.json(posts);
+  } catch (err) {
+    console.error('Get my posts error:', err);
+    res.status(500).json({ msg: 'Server error' });
+  }
+});
+
 export default router;
